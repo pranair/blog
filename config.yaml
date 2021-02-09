@@ -1,6 +1,6 @@
 baseurl : "http://praty.live/"
 title : ":(){ :|:& };:"
-theme: "anubis"
+theme: "hugo_anubis"
 paginate: 10
 enableRobotsTXT: true
 summaryLength: 40
