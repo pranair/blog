@@ -1,5 +1,5 @@
 ---
-title: "Setting up a static blog(Hugo/Nginx/FreeBSD)"
+title: "Setting up a static blog (Hugo/Nginx/FreeBSD)"
 date: 2021-02-09T18:46:13+05:30
 ---
 
