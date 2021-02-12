@@ -1,12 +1,11 @@
 ---
-title: "Setting up a static blog(Hugo/Nginx/FreeBSD)"
+title: "Setting up a static blog (Hugo/Nginx/FreeBSD)"
 date: 2021-02-09T18:46:13+05:30
 ---
 
 ## Introduction
-> Note: There is no particular reason I chose to use Hugo, Nginx and FreeBSD.
 
-> Note 2: Most of this is a rip-off of the excellent documentation at DigitalOcean. Its compiled here for convenience.
+> Note: Most of this is a rip-off of the excellent documentation at DigitalOcean. Its compiled here for convenience.
 
 Before starting setup SSH.
 
@@ -14,7 +13,9 @@ Before starting setup SSH.
 
 Update the system:
 
-`sudo freebsd-update fetch install`
+```
+$ sudo freebsd-update fetch install
+```
 
 Install the following:
 * nvim
@@ -25,7 +26,9 @@ Install the following:
 
 Change the default shell to bash:
 
-`$ sudo chsh -s bash freebsd`
+```
+$ sudo chsh -s bash freebsd
+```
 
 ### Setting up firewall
 
@@ -44,28 +47,37 @@ firewall_logdeny="YES"
 
 The third line opens the ports 22, 80 and 443 for SSH, HTTP and HTTPS respectively.
 
-To start the firewall:
+FreeBSD comes with two firewalls, ipfw and pf. To start the firewall:
 
-`$ sudo service ipfw start`
+```
+$ sudo service ipfw start
+```
 
 To configure how many denials per IP to log, append the following to /etc/sysctl.conf:
 
 `net.inet.ip.fw.verbose_limit=5`
 
+
 ### Setting up the timezone
 
 FreeBSD provides a TUI for this purpose, which is quite nice. To access it run:
 
-`$ sudo tzsetup`
+```
+$ sudo tzsetup
+```
 
 We can now enable NTP. To prevent NTP from failing during boot, its recommended to sync it on start. For this run the following:
 
-`sudo sysrc ntpd_enable="YES"`
-`$ sudo sysrc ntpd_enable="YES"`
+```
+$ sudo sysrc ntpd_enable="YES"
+$ sudo sysrc ntpd_enable="YES"
+```
 
 Also don't forget to start the service:
 
-`$ sudo service ntpd start`
+```
+$ sudo service ntpd start
+```
 
 ### Setting up Nginx 
 
@@ -84,22 +96,26 @@ server {
 
 . . .
 ```
-Here, it should be noted that the Nginx sin configured to serve html from ~/public_html. This is purely for convenience.
+Here, it should be noted that the Nginx is configured to serve html from ~/public_html. This is purely for convenience.
 
 > Note: change the `server_domain_or_IP` to the public IP of the website.
 
 ### Setting up git hooks
 
-Initially, I had the idea of setting up a cron task to pull from Github and update public_html. But this wasn't ideal. A quick googling introduced me to git hooks and boy they were perfect!. A little more searching and I found out DigitalOcean has a page describing exactly this! Here's how to set it up: we need to create a bare repo to pull and configure it so that every time we push to the server it runs a script. This can be achieved with post-receive hook.
+Initially, I had the idea of setting up a cron task to pull from Github and update public_html. A quick google yielded me to git hooks, which was a better way. A little more searching and I found out DigitalOcean has a page describing exactly this! Here's how to set it up: we need to create a bare repo to pull and configure it so that every time we push to the server it runs a script. This can be achieved with post-receive hook.
 
 Clone the repo to the server and then create a bare repo from it:
 
-`$ git clone --bare ~/blog_repo ~/blog.git`
+```
+$ git clone --bare ~/blog_repo ~/blog.git
+```
 
 The original repo can be deleted. Next, 
 
-`$ cd ~/blog.git/hooks`
-`$ nvim post-receive`
+```
+$ cd ~/blog.git/hooks
+$ nvim post-receive
+```
 
 Add the following to it:
 ```
@@ -128,10 +144,12 @@ trap - EXIT
 Here's what we do here:
 Every time the git repo is pushed from the development server to the production server (i.e this server), the repo is automatically pulled <!-- TODO: from where? --> and build with hugo and automatically copied to ~/public_html. 
 
-> `set -e` makes the program quit immediately in case of errors. The trap command does the clean up when this happens. 
+`set -e` makes the program quit immediately in case of errors. The trap command does the clean up when this happens. 
 
 Set up git remote in the development sever: 
 
-`git remote add prod username@production_domain_or_IP:my-website.git`
+```
+$ git remote add prod username@production_domain_or_IP:my-website.git
+```
 
 When a change is made in the devserver just push to the prodserver with `git push prod` and it should work!
